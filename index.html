@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Corazones</title>
+    <style>
+        body {
+            background-color: #ffcccb;
+            text-align: center;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .contador {
+            font-size: 2rem;
+            margin-top: 20vh;
+            color: red;
+        }
+        .barra-progreso {
+            width: 50%;
+            margin: auto;
+            height: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid red;
+            position: relative;
+            overflow: hidden;
+        }
+        .progreso {
+            height: 100%;
+            width: 0%;
+            background: red;
+            transition: width 0.1s;
+        }
+        .tablero {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 1.2rem;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .corazon {
+            position: absolute;
+            color: red;
+            font-size: 2rem;
+            cursor: pointer;
+            animation: caer 3s linear;
+        }
+        @keyframes caer {
+            from { top: -50px; }
+            to { top: 100vh; }
+        }
+        .carta {
+            width: 200px;
+            height: 250px;
+            background: purple;
+            display: none;
+            text-align: center;
+            font-size: 1.2rem;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            margin: auto;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .mensaje-final {
+            font-size: 2rem;
+            color: #d10000;
+            font-weight: bold;
+            display: none;
+        }
+        .inicio {
+            font-size: 2rem;
+            color: white;
+            background: red;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: none;
+        }
+        .trofeo {
+            font-size: 3rem;
+            display: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .flor {
+            font-size: 3rem;
+            display: none;
+            cursor: pointer;
+            margin-top: 20px;
+            animation: flotar 2s infinite alternate;
+        }
+        @keyframes flotar {
+            from { transform: translateY(0px); }
+            to { transform: translateY(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="contador">1</div>
+    <div class="barra-progreso">
+        <div class="progreso" id="barra"></div>
+    </div>
+    <div id="inicioJuego" class="inicio" onclick="iniciarJuego()">Iniciar Juego</div>
+    <div id="tablero" class="tablero">
+        Objetivo: Captura 10 corazones y revela 5 cartas<br>
+        Corazones capturados: <span id="contadorCorazones">0</span> / 10<br>
+        Cartas reveladas: <span id="contadorCartas">0</span> / 5
+    </div>
+    <div id="cartaMensaje" class="carta"></div>
+    <div id="mensajeFinal" class="mensaje-final">¡Felicidades por pasarte el juego! 🎉</div>
+    <div id="trofeo" class="trofeo" onclick="mostrarMensajeFinal()">🏆</div>
+    <div id="flor" class="flor" onclick="mostrarInvitacion()">🌸</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let contador = 1;
+            let barra = document.getElementById("barra");
+            let contadorElemento = document.querySelector(".contador");
+            let corazonesCapturados = 0;
+            let cartasReveladas = 0;
+            let mensajesCartas = [
+                "Eres una persona increíble",
+                "Tu sonrisa ilumina mi día",
+                "Me encanta hablar contigo",
+                "Siempre haces que todo sea especial",
+                "Ojalá haberte conocido antes"
+            ];
+
+            let intervalo = setInterval(() => {
+                contadorElemento.innerHTML = contador;
+                barra.style.width = `${contador}%`;
+                contador++;
+                if (contador > 100) {
+                    clearInterval(intervalo);
+                    contadorElemento.style.display = "none";
+                    document.querySelector(".barra-progreso").style.display = "none";
+                    document.getElementById("inicioJuego").style.display = "block";
+                }
+            }, 50);
+
+            window.iniciarJuego = function() {
+                document.getElementById("inicioJuego").style.display = "none";
+                document.getElementById("tablero").style.display = "block";
+                iniciarLluviaCorazones();
+            }
+
+            function iniciarLluviaCorazones() {
+                setInterval(() => {
+                    let corazon = document.createElement("div");
+                    corazon.innerHTML = "❤️";
+                    corazon.classList.add("corazon");
+                    corazon.style.left = Math.random() * window.innerWidth + "px";
+                    corazon.style.top = "-50px";
+                    corazon.onclick = capturarCorazon;
+                    document.body.appendChild(corazon);
+                    setTimeout(() => corazon.remove(), 4000);
+                }, 500);
+            }
+
+            function capturarCorazon(event) {
+                event.target.remove();
+                corazonesCapturados++;
+                document.getElementById("contadorCorazones").innerText = corazonesCapturados;
+                
+                if (corazonesCapturados % 2 === 0 && cartasReveladas < 5) {
+                    mostrarCarta();
+                }
+
+                if (corazonesCapturados >= 10 && cartasReveladas >= 5) {
+                    finalizarJuego();
+                }
+            }
+
+            function mostrarCarta() {
+                let carta = document.getElementById("cartaMensaje");
+                carta.innerText = mensajesCartas[cartasReveladas];
+                carta.style.display = "flex";
+                setTimeout(() => {
+                    carta.style.display = "none";
+                }, 5000);
+                cartasReveladas++;
+                document.getElementById("contadorCartas").innerText = cartasReveladas;
+            }
+
+            function finalizarJuego() {
+                document.getElementById("tablero").style.display = "none";
+                document.getElementById("mensajeFinal").style.display = "block";
+                document.getElementById("trofeo").style.display = "block";
+                document.getElementById("flor").style.display = "block"; // Mostrar la flor al finalizar
+            }
+
+            window.mostrarInvitacion = function() {
+                alert("¡Has completado el juego! 🌸\n¿Quieres salir a tomar algo juntos? 💖");
+            }
+        });
+    </script>
+</body>
+</html>
